@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -46,11 +47,26 @@ class ItemDetailFragment : Fragment() {
         )
     }
 
+
+
     private fun bind(item: Item){
         binding.apply {
-            itemName.text = item.itemName
+            itemName.setText(item.itemName, TextView.BufferType.SPANNABLE)
             itemPrice.text = item.getFormattedPrice()
             itemCount.text = item.quantityInStock.toString()
+        }
+        binding.apply {
+            sellItem.setOnClickListener { viewModel.sellItem(item) }
+        }
+        binding.apply {
+            sellItem.isEnabled = viewModel.isStockAvailable(item)
+            sellItem.setOnClickListener { viewModel.sellItem(item) }
+        }
+        binding.apply {
+            deleteItem.setOnClickListener { showConfirmationDialog() }
+        }
+        binding.apply {
+            editItem.setOnClickListener { editItem() }
         }
     }
 
@@ -91,7 +107,8 @@ class ItemDetailFragment : Fragment() {
     /**
      * Deletes the current item and navigates to the list fragment.
      */
-    private fun deleteItem() {
+    private fun deleteItem(){
+        viewModel.deleteItem(item)
         findNavController().navigateUp()
     }
 
@@ -102,4 +119,13 @@ class ItemDetailFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+    private fun editItem() {
+        val action = ItemDetailFragmentDirections.actionItemDetailFragmentToAddItemFragment(
+            getString(R.string.edit_fragment_title),
+            item.id
+        )
+        this.findNavController().navigate(action)
+    }
+
 }
